@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="bg">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>3D KRU LAB — 3D печат и reverse engineering в Дупница</title>
+  <meta name="description" content="3D KRU LAB — инженерна работилница за 3D печат в Дупница. Reverse engineering на редки авточасти, части по твоя идея, фигурки, макети и малки серии.">
+  <meta name="theme-color" content="#0e100e">
+  <meta property="og:title" content="3D KRU LAB — Няма я никъде? Печатаме я.">
+  <meta property="og:description" content="3D печат и reverse engineering в Дупница. Сканираме, чертаем и печатаме — слой по слой.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="./img/lancia-alu-2.jpg">
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <script>document.documentElement.classList.add('js')</script>
+  <script type="module" crossorigin src="./assets/index-iST6Sp8S.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-BoZCH5Gy.css">
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="cube" viewBox="-11 -11 22 22">
+    <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round">
+      <path d="M0-10 8.66-5V5L0 10-8.66 5V-5Z"/>
+      <path d="M0 2-8.66-5M0 2 8.66-5M0 2V10"/>
+      <path d="M0-2-8.66 5M0-2 8.66 5M0-2V-10" opacity=".55"/>
+    </g>
+  </symbol>
+  <symbol id="arrow" viewBox="0 0 24 24"><path d="M5 19 19 5M8 5h11v11" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+</svg>
+
+<!-- Скрол = ос Z. Мишка = X/Y. -->
+<div class="zhud" aria-hidden="true">
+  <div class="zhud__rail"><i id="z-fill"></i></div>
+  <span id="z-val">Z+000%</span>
+</div>
+<div class="xyhud" aria-hidden="true" id="xy">X0000 Y0000</div>
+
+<header class="nav" id="nav">
+  <a class="logo" href="#top" aria-label="3D KRU LAB — начало">
+    <svg class="logo__cube"><use href="#cube"/></svg>
+    <span class="logo__txt"><b>3D KRU</b><i>LAB</i></span>
+  </a>
+  <nav class="nav__links" id="nav-links" aria-label="Основна навигация">
+    <a href="#services">Услуги</a>
+    <a href="#process">Процес</a>
+    <a href="#projects">Проекти</a>
+    <a href="#materials">Материали</a>
+    <a href="#contact">Контакт</a>
+  </nav>
+  <a class="nav__call" href="tel:+359878792827"><span class="pulse"></span>087 879 2827</a>
+  <button class="nav__burger" id="burger" aria-label="Меню" aria-expanded="false" aria-controls="nav-links"><i></i><i></i></button>
+</header>
+
+<main id="top">
+
+  <!-- ═══════════ HERO ═══════════ -->
+  <section class="hero">
+    <div class="hero__stage" id="stage">
+      <canvas id="printer" aria-label="Интерактивен 3D принтер, който печата модел слой по слой"></canvas>
+      <span class="hero__hint">↻ хвани и завърти</span>
+    </div>
+
+    <div class="hero__copy wrap">
+      <p class="eyebrow">3D печат · Reverse engineering · Дупница</p>
+      <h1 class="hero__h">
+        <span class="l">Няма я</span>
+        <span class="l">никъде?</span>
+        <span class="l l--lime">Печатаме&nbsp;я.</span>
+      </h1>
+      <p class="hero__p">Рядка капачка за Lancia, въздуховод за Kia, рога за кукерска маска или нещо, което засега съществува само в главата ти. Сканираме, чертаем и го печатаме — слой по слой.</p>
+      <div class="hero__cta">
+        <a class="btn btn--lime" href="#projects">Виж проектите <svg><use href="#arrow"/></svg></a>
+        <a class="btn" href="#contact">Свържи се</a>
+      </div>
+    </div>
+
+    <aside class="panel" aria-label="Статус на принтера">
+      <div class="panel__top">
+        <span class="panel__state"><i class="led"></i><b id="st-state">ПЕЧАТ</b></span>
+        <span id="st-name">Капачка за джанта</span>
+      </div>
+      <div class="panel__bar"><i id="st-bar"></i></div>
+      <div class="panel__nums">
+        <span>СЛОЙ <b id="st-layer">000/000</b></span>
+        <span>Z <b id="st-z">0.0</b> mm</span>
+        <span>ДЮЗА <b>210°</b></span>
+        <span>МАСА <b>60°</b></span>
+      </div>
+      <div class="chips" role="group" aria-label="Избери какво да се печата" id="chips">
+        <button data-m="0" aria-pressed="true">Капачка</button>
+        <button data-m="1" aria-pressed="false">Въздуховод</button>
+        <button data-m="2" aria-pressed="false">Рог за Сурва</button>
+        <button data-m="3" aria-pressed="false">Кубът</button>
+      </div>
+      <div class="swatches" role="group" aria-label="Цвят на филамента" id="swatches">
+        <span>Филамент</span>
+        <button data-c="#9bd93b" style="--c:#9bd93b" aria-label="Зелен" aria-pressed="true"></button>
+        <button data-c="#c9cdc6" style="--c:#c9cdc6" aria-label="Сребрист" aria-pressed="false"></button>
+        <button data-c="#1f6fff" style="--c:#1f6fff" aria-label="Син" aria-pressed="false"></button>
+        <button data-c="#ff6b2c" style="--c:#ff6b2c" aria-label="Оранжев" aria-pressed="false"></button>
+        <button data-c="#f4f3ec" style="--c:#f4f3ec" aria-label="Бял" aria-pressed="false"></button>
+        <button data-c="#3a3f3b" style="--c:#3a3f3b" aria-label="Графит" aria-pressed="false"></button>
+      </div>
+    </aside>
+  </section>
+
+  <!-- ═══════════ TICKER ═══════════ -->
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker__row">
+      <span>3D печат</span><span>Reverse engineering</span><span>3D сканиране</span><span>Прототипи</span><span>Редки авточасти</span><span>Части по идея</span><span>Фигурки и макети</span><span>Малки серии</span>
+      <span>3D печат</span><span>Reverse engineering</span><span>3D сканиране</span><span>Прототипи</span><span>Редки авточасти</span><span>Части по идея</span><span>Фигурки и макети</span><span>Малки серии</span>
+    </div>
+  </div>
+
+  <!-- ═══════════ SERVICES ═══════════ -->
+  <section class="sec services" id="services">
+    <div class="wrap">
+      <header class="sec__head">
+        <p class="tag rv">01 — Услуги</p>
+        <h2 class="rv">Какво правим</h2>
+        <p class="sec__lead rv">Инженерна работилница, а не просто принтер в ъгъла. Ако нещо може да се измери — може и да се направи отново.</p>
+      </header>
+
+      <ul class="svc" id="svc">
+        <li class="svc__row rv" data-img="img/lancia-cap-a1.jpg">
+          <span class="svc__n">01</span>
+          <h3>Reverse engineering</h3>
+          <p>Носиш счупената, напуканата или липсващата част. Ние я сканираме, чертаем наново и я връщаме към живот — често по-здрава от оригинала.</p>
+          <img src="./img/lancia-cap-a1.jpg" alt="" loading="lazy" width="96" height="120">
+        </li>
+        <li class="svc__row rv" data-img="img/lancia-alu-2.jpg">
+          <span class="svc__n">02</span>
+          <h3>Редки авточасти</h3>
+          <p>Капачки за джанти, лайсни, въздуховоди и всичко останало, което вече не се произвежда или в сервиза струва колкото половин кола.</p>
+          <img src="./img/lancia-alu-2.jpg" alt="" loading="lazy" width="96" height="120">
+        </li>
+        <li class="svc__row rv" data-img="img/thumb-fireplace.jpg">
+          <span class="svc__n">03</span>
+          <h3>Части по твоя идея</h3>
+          <p>Държач, преходник, кутия или цяла система — като обдухването за камина, което измислихме заедно с клиент за по-добър топлообмен.</p>
+          <img src="./img/thumb-fireplace.jpg" alt="" loading="lazy" width="96" height="120">
+        </li>
+        <li class="svc__row rv" data-img="img/surva-1.jpg">
+          <span class="svc__n">04</span>
+          <h3>Фигурки, макети и декор</h3>
+          <p>Модели по поръчка, подаръци и колекционерски фигурки. Дори рогата на кукерска маска за Сурва са минавали през нашия принтер.</p>
+          <img src="./img/surva-1.jpg" alt="" loading="lazy" width="96" height="120">
+        </li>
+        <li class="svc__row rv" data-img="img/lancia-cap-b5.jpg">
+          <span class="svc__n">05</span>
+          <h3>Един брой или цял кашон</h3>
+          <p>Веднъж начертан, моделът остава. Трябва ти втора бройка след година или двайсет наведнъж — печатаме колкото кажеш.</p>
+          <img src="./img/lancia-cap-b5.jpg" alt="" loading="lazy" width="96" height="120">
+        </li>
+      </ul>
+    </div>
+    <div class="peek" id="peek" aria-hidden="true"><img alt=""></div>
+  </section>
+
+  <!-- ═══════════ 700 лв. ═══════════ -->
+  <section class="price" id="price">
+    <div class="wrap price__in">
+      <p class="tag">Случка от практиката</p>
+      <p class="price__big" aria-label="700 лева, зачеркнато"><span>700&nbsp;лв.</span></p>
+      <p class="price__txt">Толкова струва оригиналният въздуховод за <b>Kia Sportage 2.0 CRDi</b>. Нашият излезе <em>далеч по-символично</em>. Понякога малко reverse engineering спестява стотици, че и хиляди.</p>
+    </div>
+  </section>
+
+  <!-- ═══════════ PROCESS ═══════════ -->
+  <section class="sec process" id="process">
+    <div class="wrap">
+      <header class="sec__head">
+        <p class="tag rv">02 — Процес</p>
+        <h2 class="rv">От счупена част до&nbsp;нова</h2>
+      </header>
+
+      <div class="proc">
+        <div class="proc__viz" id="proc-viz" data-step="1" aria-hidden="true"></div>
+
+        <ol class="proc__steps" id="proc-steps">
+          <li data-step="1">
+            <span class="proc__n">01</span>
+            <h3>Носиш частта. Или само идеята.</h3>
+            <p>Счупена, напукана, изгоряла от слънцето или нарисувана на салфетка — всичко върши работа за начало. Ако имаш и готов 3D файл, още по-добре.</p>
+          </li>
+          <li data-step="2">
+            <span class="proc__n">02</span>
+            <h3>Сканираме и мерим.</h3>
+            <p>Снемаме формата и всеки размер, който има значение. Тук се решава дали новата част ще щракне на мястото си от първия път.</p>
+          </li>
+          <li data-step="3">
+            <span class="proc__n">03</span>
+            <h3>Чертаем 3D модел.</h3>
+            <p>Превръщаме измерванията в точен цифров модел. Ако оригиналът е имал слабо място, сега е моментът да го оправим.</p>
+          </li>
+          <li data-step="4">
+            <span class="proc__n">04</span>
+            <h3>Печатаме прототип.</h3>
+            <p>Пробваме на място, коригираме и печатаме пак. Понякога минават няколко прототипа, докато стане както трябва — това е част от играта.</p>
+          </li>
+          <li data-step="5">
+            <span class="proc__n">05</span>
+            <h3>Готово. И пак, ако потрябва.</h3>
+            <p>Получаваш частта, а моделът остава при нас. Следващата бройка е въпрос на едно съобщение — и на част от цената на оригинала.</p>
+          </li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ PROJECTS ═══════════ -->
+  <section class="sec projects" id="projects">
+    <div class="wrap">
+      <header class="sec__head sec__head--row">
+        <div>
+          <p class="tag rv">03 — Проекти</p>
+          <h2 class="rv">Излезли от нашата маса</h2>
+        </div>
+        <div class="trk__nav">
+          <span class="trk__count" id="trk-count">01 / 08</span>
+          <button id="trk-prev" aria-label="Предишен проект">←</button>
+          <button id="trk-next" aria-label="Следващ проект">→</button>
+        </div>
+      </header>
+    </div>
+    <div class="trk" id="trk" tabindex="0" aria-label="Проекти — плъзни настрани"></div>
+    <p class="wrap trk__hint">Плъзни настрани · натисни проект за още снимки</p>
+  </section>
+
+  <!-- ═══════════ MATERIALS ═══════════ -->
+  <section class="sec materials" id="materials">
+    <div class="wrap">
+      <header class="sec__head">
+        <p class="tag rv">04 — Материали</p>
+        <h2 class="rv">С какво печатаме</h2>
+        <p class="sec__lead rv">Не си сигурен кой ти трябва? Кажи ни къде ще работи частта — на слънце, до двигател или на рафта — и ние ще изберем.</p>
+      </header>
+
+      <div class="mat">
+        <div class="mat__tabs" role="tablist" aria-label="Материали" id="mat-tabs">
+          <button role="tab" aria-selected="true" data-k="pla">PLA</button>
+          <button role="tab" aria-selected="false" data-k="petg">PETG</button>
+          <button role="tab" aria-selected="false" data-k="asa">ABS / ASA</button>
+          <button role="tab" aria-selected="false" data-k="tpu">TPU</button>
+        </div>
+        <div class="mat__panel" role="tabpanel" id="mat-panel">
+          <svg class="spool" viewBox="0 0 120 120" aria-hidden="true">
+            <circle cx="60" cy="60" r="56" class="spool__flange"/>
+            <g class="spool__wind">
+              <circle cx="60" cy="60" r="46"/><circle cx="60" cy="60" r="40"/><circle cx="60" cy="60" r="34"/><circle cx="60" cy="60" r="28"/>
+            </g>
+            <g class="spool__hub"><circle cx="60" cy="60" r="20"/><path d="M60 44v32M44 60h32"/><circle cx="60" cy="60" r="5"/></g>
+          </svg>
+          <div class="mat__body">
+            <h3 id="mat-title"></h3>
+            <p id="mat-desc"></p>
+            <dl class="bars" id="mat-bars"></dl>
+            <p class="mat__use"><span>Подходящ за</span> <b id="mat-use"></b></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ FAQ ═══════════ -->
+  <section class="sec faq" id="faq">
+    <div class="wrap faq__grid">
+      <header class="sec__head">
+        <p class="tag rv">05 — Въпроси</p>
+        <h2 class="rv">Питат ни често</h2>
+      </header>
+      <div class="faq__list">
+        <details class="rv" open>
+          <summary>Нямам 3D модел. Проблем ли е?</summary>
+          <p>Никакъв. Точно това правим — донеси самата част (дори счупена), скица или просто обясни идеята. Сканираме, мерим и чертаем модела ние.</p>
+        </details>
+        <details class="rv">
+          <summary>Как да поръчам?</summary>
+          <p>Засега не приемаме поръчки през сайта. Пиши ни в Instagram или Facebook, обади се на 087 879 2827 или мини през ателието в Дупница. Снимка на частта и две изречения стигат за начало.</p>
+        </details>
+        <details class="rv">
+          <summary>Колко струва?</summary>
+          <p>Зависи от размера, материала, времето за печат и дали трябва да чертаем модела от нула. Изпрати ни какво ти трябва и ще получиш конкретна цена, преди да започнем.</p>
+        </details>
+        <details class="rv">
+          <summary>За колко време става?</summary>
+          <p>Готов файл и малка част — бързо. Reverse engineering с няколко прототипа отнема повече. Казваме ти реалистичен срок още при запитването.</p>
+        </details>
+        <details class="rv">
+          <summary>Печатате ли само един брой?</summary>
+          <p>Да. Една бройка, пет или цял кашон — няма минимално количество.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ CONTACT ═══════════ -->
+  <section class="contact" id="contact">
+    <div class="wrap">
+      <p class="tag tag--ink rv">06 — Контакт</p>
+      <h2 class="contact__h rv">Имаш идея или счупена част?</h2>
+      <p class="contact__p rv">Пиши ни, обади се или направо мини през ателието. Снимка на частта и две изречения са напълно достатъчни за начало.</p>
+
+      <div class="tiles">
+        <a class="tile rv" href="tel:+359878792827">
+          <span class="tile__k">Телефон</span>
+          <span class="tile__v">087 879 2827</span>
+          <svg><use href="#arrow"/></svg>
+        </a>
+        <a class="tile rv" href="https://www.instagram.com/3d_kru_lab/" target="_blank" rel="noopener">
+          <span class="tile__k">Instagram</span>
+          <span class="tile__v">@3d_kru_lab</span>
+          <svg><use href="#arrow"/></svg>
+        </a>
+        <a class="tile rv" href="https://www.facebook.com/p/3D-KRU-LAB-61560918570156/" target="_blank" rel="noopener">
+          <span class="tile__k">Facebook</span>
+          <span class="tile__v">3D KRU LAB</span>
+          <svg><use href="#arrow"/></svg>
+        </a>
+        <a class="tile tile--addr rv" href="https://www.google.com/maps/search/?api=1&query=3D+KRU+LAB+%D0%94%D1%83%D0%BF%D0%BD%D0%B8%D1%86%D0%B0" target="_blank" rel="noopener">
+          <img src="./img/thumb-shop.jpg" alt="Витрината на 3D KRU LAB в Дупница" loading="lazy" width="361" height="640">
+          <span class="tile__k">Ателие</span>
+          <span class="tile__v">ул. „Иван Вазов“, бл.&nbsp;45<br>Дупница</span>
+          <span class="tile__s">Отвори в Google Maps</span>
+          <svg><use href="#arrow"/></svg>
+        </a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="foot__mark" aria-hidden="true"><span>3D KRU</span><span class="o">LAB</span></div>
+  <div class="wrap foot__row">
+    <span>© <span id="year">2026</span> 3D KRU LAB · Дупница</span>
+    <span>Направено слой по слой 🍀✌🏻</span>
+    <a href="#top">Нагоре ↑</a>
+  </div>
+</footer>
+
+<dialog class="lb" id="lb" aria-label="Снимки от проекта">
+  <button class="lb__x" id="lb-x" aria-label="Затвори">✕</button>
+  <div class="lb__media">
+    <button class="lb__arr" id="lb-prev" aria-label="Предишна снимка">←</button>
+    <img id="lb-img" alt="">
+    <button class="lb__arr" id="lb-next" aria-label="Следваща снимка">→</button>
+  </div>
+  <div class="lb__info">
+    <p class="tag" id="lb-tag"></p>
+    <h3 id="lb-title"></h3>
+    <p id="lb-text"></p>
+    <div class="lb__thumbs" id="lb-thumbs"></div>
+    <a class="btn btn--lime" href="#contact" id="lb-cta">Искам нещо подобно <svg><use href="#arrow"/></svg></a>
+  </div>
+</dialog>
+
+</body>
+</html>
